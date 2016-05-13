@@ -1,4 +1,6 @@
 #! /usr/bin/python
+#  use carriage returns as a standard delimiter
+
 
 from xbee import XBee
 import serial
@@ -8,7 +10,6 @@ from time import sleep
 import sys
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
-import msgpack
 import threading
 from multiprocessing import Process
 
@@ -33,15 +34,20 @@ unique_ids = {}
 
 # parses the mac address in the 'parameter' element of a return
 def MACtoHex(response, param):
-    return response[param][4:20]
+    return response[param][2:10]
 def addrToHex(response, param):
     return response[param][0:2]
 
 def getND(xbee, runningNodes, uniqueDict):
     # frame_id has to be something; anything will work, we don't care
     # what it is. frame_id is just for bookkeeping.
+    print "SENDING AT COMMAND"
     xbee.at(frame_id='1', command='ND')
+    print "WAITING ON RESPONSE"
     response=xbee.wait_read_frame(timeout=1)
+    # print "RECEIVED RESPONSE"
+    # print response['parameter'].encode('hex')
+    # print MACtoHex(response,'parameter').encode('hex')
     #initialize response for for loop
     if 'command' in response:
         print "[[IN COMMAND RESPONSE]]"
@@ -97,10 +103,15 @@ def iterateNodes(xbee, runningNodes, uniqueDict):
 
         try:
             xbee.tx(frame_id='2', dest_addr=key, data='\x54\x3F\x0A')
+            # xbee.tx(frame_id='2', dest_addr=key, data='\x4C\x3F\x0A')
             print '[WAITING ON DATA]'
             status=xbee.wait_read_frame(timeout=1)
+            # if status['sdz']:
+            #     print "hi"
+            print status
             print 'RECEIVED DATA]'
             status=xbee.wait_read_frame(timeout=1)
+            print status
             t=status['rf_data'].split('/r/n')[0]
             t=t.split('\n')[0]
             t=t.split('=')[1]
@@ -122,6 +133,7 @@ def rxData():
 
 def on_message(mqttc, obj, msg):
     print "MQTT MESSAGE RECEIVED"
+
     print "SENDING AN XBEE FRAME"
     xbee.tx(frame_id='2', dest_addr='\x00\x02', data='\x54\x3F\x0A')
     print "SENT"
