@@ -12,10 +12,10 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import threading
 from multiprocessing import Process
-
+import binascii
 # -----------------------------------------------------------------------------
 # Config Settings
-PORT = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB1'
 BAUD = 19200
 BROKER_NAME = "127.0.0.1"
 # Config Settings
@@ -47,7 +47,7 @@ def rxData():
             # 3 types of possible frames: AT frames, data frames, and status frames
             frameType = 0
             status = xbee.wait_read_frame()
-
+            print status
             if 'tx_status' in status:
                 if 'status' in status:
                     if status['status'] == '\x00':
@@ -98,10 +98,11 @@ def on_message(mqttc, obj, msg):
     else:
         mac = msg.topic.split("/")[3]
         print "MAC ADDRESS IS:" + mac
+        print binascii.unhexlify(mac)
         payload = msg.payload
-        print "DATA SENT IS:" + payload.encode('hex')
+        print "DATA SENT IS:" + payload.encode('ascii')
         print "SENDING AN XBEE FRAME"
-        xbee.tx(frame_id='2', dest_addr='\x00\x02', data=payload)
+        xbee.tx_long_addr(frame_id='2', dest_addr=binascii.unhexlify(mac), data=payload)
         print "SENT"
 
 def txData():
