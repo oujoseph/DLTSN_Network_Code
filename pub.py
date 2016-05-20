@@ -7,6 +7,9 @@ hexstring = "0013a20040a57a9c"
 
 # publish.single("testbed/gateway/mqtt/", 'NODE_DISCOVER', hostname=BROKER_NAME)
 
-publish.single("testbed/nodeDiscover/", 'START', hostname=BROKER_NAME)
+# publish.single("testbed/nodeDiscover/command/", 'START', hostname=BROKER_NAME)
 
 # publish.single("testbed/gateway/mqtt/", 'NODE_DISCOVER', hostname=BROKER_NAME)
+
+publish.single("testbed/iterationClient/0013a20040a57a9c", 'START \x44\x48\x30\x3F\x0A')
+# publish.single("testbed/iterationClient/0013a20040a57a9c", 'STOP \x44\x48\x30\x3F\x0A')
