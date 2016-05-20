@@ -15,7 +15,7 @@ from multiprocessing import Process
 import binascii
 # -----------------------------------------------------------------------------
 # Config Settings
-PORT = '/dev/ttyUSB1'
+PORT = '/dev/ttyUSB0'
 BAUD = 19200
 BROKER_NAME = "127.0.0.1"
 # Config Settings

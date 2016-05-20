@@ -4,7 +4,7 @@ import threading
 import time
 BROKER_NAME = "127.0.0.1"
 
-GET_TYPE = '\x54\x3F\x0A'
+GET_TYPE = '\x49\x3F\x0A'
 NODE_DISCOVER_WAIT_DURATION = 3
 
 SEND_ND = 0
@@ -14,7 +14,24 @@ nodeList = {}
 # publish.single("testbed/gateway/mqtt/" + hexstring, '\x54\x3F\x0A', hostname=BROKER_NAME)
 
 
-# Runs AT command ND, and collects it all into nodeList[]
+# State 1 runs AT command ND, and collects it all into a global nodeList[] python dictionary.
+
+# It has 3 functions:
+# on_connect_state1() will send a node discover command to the gateway 
+# when the client is connected to the broker.
+# As loop_start() automatically handles reconnection to the broker in case
+# of a random unexpected disconnect, a global SEND_ND is used as a check
+# to assure node discover message is published only once per run. 
+
+# on_message_state() loops until one of two occurrences: 
+#  1. Xbees automatically send a termination message at the end of node discover
+#     This is parsed automatically by the gateway, and comes in the form of "END"
+#  2. Timeout, set by NODE_DISCOVER_WAIT_DURATION
+
+# state1() starts the thread running on_connect_state1 and on_message_state1
+# and manages the mqtt client. 
+# It also resets the SEND_ND variable used by on_connect_state1(), and 
+# can break out of the on_connect_state1 and on_message_state1 threads upon timeout
 
 # Publish a command when the client connects
 def on_connect_state1(client, userdata, rc):
@@ -59,15 +76,28 @@ def state1():
     # guarantee the loop has stopped
     client1.loop_stop(force=False)
 
+# state2 takes nodeList[] from state1, queries each address in nodeList[] and sends a message
+# to the gateway, which then returns the types of devices associated with each MAC address
+
+# State2 has 3 functions: on_connect_state2(), on_message_state2(), and state2().
+# on_connect_state2() runs as soon as the client connects, and for each MAC address in nodeList,
+# publishes GET_TYPE requests to the broker.
+# even though on_connect_state2() has the possibility of running more than once
+# as loop_start() handles reconnection to broker, a check is implemented in
+# on_message_state2() that handles this.
+
+# on_message_state2() waits for messages from the broker and checks received messages
+# if the address of the sender matches with an entry on nodeList, and if the received
+# message is unique.
 def on_connect_state2(client2, userdata, rc):
     global nodeList
-    global state2Counter
+    # global state2Counter
     print "In state2 on connect message"
     for MacAddr in nodeList:
         print MacAddr
         publish.single("testbed/gateway/mqtt/" + MacAddr, GET_TYPE, hostname=BROKER_NAME)
         # Increment state2counter so on_message_state2 knows when to stop searching
-        state2Counter = state2Counter + 1
+        # state2Counter = state2Counter + 1
     # Disconnect after messages are sent
 
 
@@ -89,9 +119,12 @@ def on_message_state2(client, obj, msg):
         client.loop_stop(force=False)
         return
     
+    # Only update nodeList[MACfromTopicc] and state2Counter if unique MAC address
     if state2Counter < (len(nodeList)):
-        nodeList[MACfromTopic] = msg.payload
-        state2Counter = state2Counter + 1
+        if nodeList[MACfromTopic] != msg.payload:
+            nodeList[MACfromTopic] = msg.payload
+            state2Counter = state2Counter + 1
+
 
     nodeList[MACfromTopic] = msg.payload
     print nodeList
@@ -144,6 +177,8 @@ def on_message(client, obj, msg):
 # This part runs first.
 # to start it, send message "START" to testbed/nodeDiscover/
 
+# on_connect() is defined here just in case, to override the on_connect 
+# of other functions
 def on_connect(client,obj,msg):
     pass
 
