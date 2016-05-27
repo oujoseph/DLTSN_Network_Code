@@ -114,12 +114,11 @@ def on_message(mqttc, obj, msg):
 
         # If payload is not a properly formed command in hex,
         # convert to hex and make sure the result is terminated with a carriage return. 
-        if "\x0A" not in payload:
+        if "\x" not in payload:
             payload = binascii.hexlify(payload)
-            print "\x found in payload. hexlifying: "
-            if "\r\n" not in payload:
-                payload = payload + "\r\n"
-
+            print "\\x found in payload. hexlifying: "
+            conv = payload.encode("hex") + "0A"
+            payload = binascii.unhexlify(conv)
 
         print "DATA SENT IS:" + payload
         print "SENDING AN XBEE FRAME"
