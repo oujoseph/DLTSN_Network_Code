@@ -97,33 +97,35 @@ def rxData():
                         topicStruct = ('testbed/gateway/nodes/')
                         publish.single(topicStruct, "END", hostname=BROKER_NAME)
         except:
-            print "some exception occurred"
+            print "an error occured in rxData"
 
 
 def on_message(mqttc, obj, msg):
-    print "MQTT MESSAGE RECEIVED"
-    # If the received message is a node discover command, send an AT command.
-    # If not, it is a data message, and forward it to the xbee.
-    if msg.payload == "NODE_DISCOVER":
-        xbee.at(frame_id='1', command='ND')
-    else:
-        mac = msg.topic.split("/")[3]
-        print "MAC ADDRESS IS:" + mac
-        print binascii.unhexlify(mac)
-        payload = msg.payload
+    try:
+        print "MQTT MESSAGE RECEIVED"
+        # If the received message is a node discover command, send an AT command.
+        # If not, it is a data message, and forward it to the xbee.
+        if msg.payload == "NODE_DISCOVER":
+            xbee.at(frame_id='1', command='ND')
+        else:
+            mac = msg.topic.split("/")[3]
+            print "MAC ADDRESS IS:" + mac
+            print binascii.unhexlify(mac)
+            payload = msg.payload
 
-        # If payload is not a properly formed command in hex,
-        # convert to hex and make sure the result is terminated with a carriage return. 
-        if "\x" not in payload:
-            payload = binascii.hexlify(payload)
-            print "\\x found in payload. hexlifying: "
-            conv = payload.encode("hex") + "0A"
-            payload = binascii.unhexlify(conv)
+            # If payload is not a properly formed command in hex,
+            # convert to hex and make sure the result is terminated with a carriage return. 
+            if "\x0A" not in payload:
+                print "\\x found in payload. hexlifying: "
+                conv = payload.encode("hex") + "0A"
+                payload = binascii.unhexlify(conv)
 
-        print "DATA SENT IS:" + payload
-        print "SENDING AN XBEE FRAME"
-        xbee.tx_long_addr(frame_id='2', dest_addr=binascii.unhexlify(mac), data=payload)
-        print "SENT"
+            print "DATA SENT IS:" + payload
+            print "SENDING AN XBEE FRAME"
+            xbee.tx_long_addr(frame_id='2', dest_addr=binascii.unhexlify(mac), data=payload)
+            print "SENT"
+    except:
+        print "An error occurred in on_message"
 
 def txData():
     # for specific client:
