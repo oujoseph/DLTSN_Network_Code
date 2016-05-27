@@ -15,7 +15,7 @@ from multiprocessing import Process
 import binascii
 # -----------------------------------------------------------------------------
 # Config Settings
-PORT = '/dev/ttyUSB1'
+PORT = '/dev/ttyUSB0'
 BAUD = 19200
 BROKER_NAME = "127.0.0.1"
 # Config Settings
@@ -111,7 +111,16 @@ def on_message(mqttc, obj, msg):
         print "MAC ADDRESS IS:" + mac
         print binascii.unhexlify(mac)
         payload = msg.payload
-        print "DATA SENT IS:" + payload.encode('ascii')
+
+        # If payload is not in hex form, convert to hex and add a carriage return if the result doesn't have one. 
+        if "\x" not in payload:
+            payload = binascii.hexlify(payload)
+            print "\x found in payload. hexlifying: "
+            if "\r\n" not in payload:
+                payload = payload + "\r\n"
+
+
+        print "DATA SENT IS:" + payload
         print "SENDING AN XBEE FRAME"
         xbee.tx_long_addr(frame_id='2', dest_addr=binascii.unhexlify(mac), data=payload)
         print "SENT"
