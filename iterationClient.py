@@ -44,11 +44,12 @@ def iterationThread():
 	print "in publishing"
 	while(True):
 		iterList = nodeList
+		print iterList
 		# For each mac address, publish to that mac address
 		for i in iterList.keys():
 			print "publishing"
 			publish.single("testbed/gateway/mqtt/" + i, iterList[i], hostname=BROKER_NAME)
-			time.sleep(.1)
+			time.sleep(1)
 
 t1 = threading.Thread(target=mqttThread)
 t2 = threading.Thread(target=iterationThread)

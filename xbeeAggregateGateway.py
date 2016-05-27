@@ -13,7 +13,7 @@ import paho.mqtt.publish as publish
 import threading
 from multiprocessing import Process
 
-PORT = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB2'
 BAUD = 19200
 BROKER_NAME = "127.0.0.1"
 

@@ -15,7 +15,7 @@ from multiprocessing import Process
 import binascii
 # -----------------------------------------------------------------------------
 # Config Settings
-PORT = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB1'
 BAUD = 19200
 BROKER_NAME = "127.0.0.1"
 # Config Settings
@@ -57,12 +57,23 @@ def rxData():
 
             if 'rf_data' in status:
                 if 'rf_data' in status:
-                    t=status['rf_data'].split('/r/n')[0]
-                    t=t.split('\n')[0]
+                    t=status['rf_data'].split('\r\n')[0]
                     # t=t.split('=')[1]
-                    topicStruct = ('testbed/gateway/data/' + status['source_addr'].encode('hex'))
-                    publish.single(topicStruct, t, hostname=BROKER_NAME)
-                    frameType = CONST_DATA
+                    
+                    # If the response is an ND command, pass it to node discover. else, pass it to testbed/gateway/data
+                    if ":" in t:
+                        print "ND IN T"
+                        print t
+                        t = t.split(':')[1]
+                        print t
+                        topicStruct = ('testbed/nodeDiscover/data/' + status['source_addr'].encode('hex'))
+                        publish.single(topicStruct, t, hostname=BROKER_NAME)
+                        frameType = CONST_DATA
+                    else:
+                        print "NO ND IN T"
+                        topicStruct = ('testbed/gateway/data/' + status['source_addr'].encode('hex'))
+                        publish.single(topicStruct, t, hostname=BROKER_NAME)
+                        frameType = CONST_DATA
 
 
             if 'command' in status:

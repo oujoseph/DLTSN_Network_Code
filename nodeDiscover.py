@@ -2,10 +2,13 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import threading
 import time
-BROKER_NAME = "127.0.0.1"
+# BROKER_NAME = "127.0.0.1"
+BROKER_NAME = "128.114.63.86"
 
 GET_TYPE = '\x49\x3F\x0A'
-NODE_DISCOVER_WAIT_DURATION = 3
+# GET_TYPE = '\x52\x45\x41\x44\x0A'
+# DATA POINT: GET_TYPE = '\x44\x48\x30\x3F\x0A'
+NODE_DISCOVER_WAIT_DURATION = 5
 
 SEND_ND = 0
 state2Counter = 0
@@ -144,7 +147,7 @@ def state2():
 
     client = mqtt.Client("xbeeNodeDiscoverS2receive")
     client.connect(BROKER_NAME, 1883, 60)
-    client.subscribe("testbed/gateway/data/#", 0)
+    client.subscribe("testbed/nodeDiscover/data/#", 0)
     client.on_message = on_message_state2
     
     client2.loop_start()
@@ -162,6 +165,11 @@ def state2():
 # A 3rd state rearms nodeDiscover to allow it to iterate again.
 # on_message() serves main(), and starts 
 
+def pubMessage():
+    global nodeList
+    for i in nodeList:
+        publish.single("testbed/nodeDiscover/data/" + i, nodeList[i], hostname=BROKER_NAME)
+
 def on_message(client, obj, msg):
     print "Command received by nodeDiscover Client"
     if msg.payload == "START":
@@ -171,6 +179,7 @@ def on_message(client, obj, msg):
         state1()
         state2()
         print "-------END OF STATE 1 AND 2-------"
+        pubMessage()
         print nodeList
         main()
 
@@ -183,7 +192,7 @@ def on_connect(client,obj,msg):
     pass
 
 def main():
-    print "\n\n--IN MAIN--\n"
+    print "\n--IN MAIN--\n"
     # Set/reset all variables and states
     global SEND_ND
     global state2Counter
@@ -198,7 +207,7 @@ def main():
     client.on_message = on_message
     client.on_connect = on_connect
     client.connect(BROKER_NAME, 1883)
-    client.subscribe("testbed/nodeDiscover/#", 0)
+    client.subscribe("testbed/nodeDiscover/command/", 0)
     client.loop_forever()
 
 if __name__ == "__main__":main()
