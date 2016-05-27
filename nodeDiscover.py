@@ -165,11 +165,6 @@ def state2():
 # A 3rd state rearms nodeDiscover to allow it to iterate again.
 # on_message() serves main(), and starts 
 
-def pubMessage():
-    global nodeList
-    for i in nodeList:
-        publish.single("testbed/nodeDiscover/data/" + i, nodeList[i], hostname=BROKER_NAME)
-
 def on_message(client, obj, msg):
     print "Command received by nodeDiscover Client"
     if msg.payload == "START":
@@ -179,7 +174,6 @@ def on_message(client, obj, msg):
         state1()
         state2()
         print "-------END OF STATE 1 AND 2-------"
-        pubMessage()
         print nodeList
         main()
 

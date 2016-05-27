@@ -14,7 +14,7 @@ import threading
 import time
 
 nodeList = {}
-BROKER_NAME = '127.0.0.1'
+BROKER_NAME = "128.114.63.86"
 
 def on_message(mqttc, obj, msg):
 	global nodeList
@@ -25,12 +25,13 @@ def on_message(mqttc, obj, msg):
 	print "received mac address: " + mac
 	if condition == 'START':
 		print "starting: " + argument
-		nodeList[mac] = argument
+
+		nodeList[mac + ',' + argument] = argument
 	else: 
 		print "stopping:" + argument
-		if mac in nodeList:
-			if nodeList[mac] == argument:
-				del nodeList[mac]
+		if (mac + ',' + argument) in nodeList:
+			if nodeList[mac + ',' + argument] == argument:
+				del nodeList[mac + ',' + argument]
 	
 
 def mqttThread():
@@ -44,11 +45,11 @@ def iterationThread():
 	print "in publishing"
 	while(True):
 		iterList = nodeList
-		print iterList
+		# print iterList
 		# For each mac address, publish to that mac address
 		for i in iterList.keys():
-			print "publishing"
-			publish.single("testbed/gateway/mqtt/" + i, iterList[i], hostname=BROKER_NAME)
+			print "publishing: " + iterList[i] + " MAC ADDRESS: " + i.split(',')[0]
+			publish.single("testbed/gateway/mqtt/" + i.split(',')[0], iterList[i], hostname=BROKER_NAME)
 			time.sleep(1)
 
 t1 = threading.Thread(target=mqttThread)
