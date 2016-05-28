@@ -121,6 +121,7 @@ def on_message(mqttc, obj, msg):
                 payload = binascii.unhexlify(conv)
 
             print "DATA SENT IS:" + payload
+            payload = payload.split('\r')[0]
             print "SENDING AN XBEE FRAME"
             xbee.tx_long_addr(frame_id='2', dest_addr=binascii.unhexlify(mac), data=payload)
             print "SENT"
