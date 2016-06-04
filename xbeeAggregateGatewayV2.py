@@ -71,9 +71,14 @@ def rxData():
                         frameType = CONST_DATA
                     else:
                         print "NO ND IN T"
-                        topicStruct = ('testbed/gateway/data/' + status['source_addr'].encode('hex'))
-                        publish.single(topicStruct, t, hostname=BROKER_NAME)
-                        frameType = CONST_DATA
+                        if "set" in t:
+                            topicStruct = ('testbed/gateway/actuators/' + status['source_addr'].encode('hex'))
+                            publish.single(topicStruct, t, hostname=BROKER_NAME)
+                            frameType = CONST_DATA
+                        else:
+                            topicStruct = ('testbed/gateway/data/' + status['source_addr'].encode('hex'))
+                            publish.single(topicStruct, t, hostname=BROKER_NAME)
+                            frameType = CONST_DATA
 
 
             if 'command' in status:
