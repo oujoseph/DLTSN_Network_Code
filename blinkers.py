@@ -1,8 +1,9 @@
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
-import time# BROKER_NAME = "127.0.0.1"
-BROKER_NAME = "128.114.63.86"
+import time
+BROKER_NAME = "127.0.0.1"
+# BROKER_NAME = "128.114.63.86"
 
 # AS = "L0", tells the sensor which to base the setpoint off.
 # AP = changes the setpoint value.

@@ -1,8 +1,8 @@
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import time
-# BROKER_NAME = "127.0.0.1"
-BROKER_NAME = "128.114.63.86"
+BROKER_NAME = "127.0.0.1"
+# BROKER_NAME = "128.114.63.86"
 
 hexstring = "0013a20040a57a9c"
 

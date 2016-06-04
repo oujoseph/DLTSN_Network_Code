@@ -16,7 +16,8 @@ import time
 import binascii
 
 nodeList = {}
-BROKER_NAME = "128.114.63.86"
+BROKER_NAME = "127.0.0.1"
+# BROKER_NAME = "128.114.63.86"
 
 def on_message(mqttc, obj, msg):
 	global nodeList
